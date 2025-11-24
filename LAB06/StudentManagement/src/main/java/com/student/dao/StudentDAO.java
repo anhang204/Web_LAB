@@ -240,4 +240,17 @@ public class StudentDAO {
             return false;
         }
     }
+
+   public int getTotalStudents() throws SQLException {
+        String sql = "SELECT COUNT(*) FROM students";
+        int count = 0;
+
+        try (Connection connection = getConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sql)) {
+
+            if (rs.next()) {
+                count = rs.getInt(1); // Get the value from the first column (COUNT(*))
+            }
+        }
+        return count;
+    }
 }

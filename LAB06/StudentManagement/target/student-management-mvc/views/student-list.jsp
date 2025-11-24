@@ -149,8 +149,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>📚 Student Management System</h1>
-        <p class="subtitle">MVC Pattern with Jakarta EE & JSTL</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1>📚 Student Management System</h1>
+                <p class="subtitle">MVC Pattern with Jakarta EE & JSTL</p>
+            </div>
+            <div>
+                <span style="margin-right: 10px; color: #666;">Welcome, <strong>${sessionScope.user.username}</strong></span>
+                <a href="logout" class="btn btn-danger" style="padding: 8px 15px; font-size: 14px;">Logout</a>
+            </div>
+        </div>
         
         <!-- Success Message -->
         <c:if test="${not empty param.message}">

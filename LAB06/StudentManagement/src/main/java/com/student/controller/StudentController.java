@@ -65,8 +65,14 @@ public class StudentController extends HttpServlet {
         }
     }
     
-    // List all students with search, filter, sort, and pagination
+    // List all students (delegates to searchStudents)
     private void listStudents(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        searchStudents(request, response);
+    }
+
+    // Search students (Exercise 5)
+    private void searchStudents(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         // 1. Get parameters
@@ -108,6 +114,7 @@ public class StudentController extends HttpServlet {
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("sortOrder", sortOrder);
         
+        // 5. Forward to view
         RequestDispatcher dispatcher = request.getRequestDispatcher("/views/student-list.jsp");
         dispatcher.forward(request, response);
     }
