@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Explanation: Exercises 5-10</title>
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --code-bg: #0f172a;
+            --heading-color: #e2e8f0;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            color: var(--heading-color);
+            font-size: 1.2rem;
+            margin-top: 25px;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 10px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            margin: 15px 0;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: #e2e8f0;
+            padding: 0;
+        }
+
+        .highlight {
+            color: #fca5a5;
+        }
+
+        .comment {
+            color: #64748b;
+            font-style: italic;
+        }
+        
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .method { color: #61afef; }
+        .annotation { color: #e5c07b; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Product Management System</h1>
+            <div class="subtitle">Implementation Details for Exercises 5 - 10</div>
+        </header>
+
+        <div class="section">
+            <h2>1. Advanced Search, Pagination & Sorting (Ex 5 & 7)</h2>
+            <p>This feature focuses on flexible data retrieval, allowing users to search by multiple criteria and sort the results.</p>
+
+            <h3>File: <code>ProductRepository.java</code></h3>
+            <p>The core logic lies in the custom JPQL query. The <code>(:param IS NULL OR ...)</code> technique allows for optional filters.</p>
+            <pre><code><span class="annotation">@Query</span>(<span class="string">"SELECT p FROM Product p WHERE "</span> +
+       <span class="string">"(:name IS NULL OR p.name LIKE %:name%) AND "</span> +          <span class="comment">// 1. Skip if null, else partial match</span>
+       <span class="string">"(:category IS NULL OR p.category = :category) AND "</span> +    <span class="comment">// 2. Exact match for category</span>
+       <span class="string">"(:minPrice IS NULL OR p.price >= :minPrice) AND "</span> +      <span class="comment">// 3. Price lower bound</span>
+       <span class="string">"(:maxPrice IS NULL OR p.price <= :maxPrice)"</span>)            <span class="comment">// 4. Price upper bound</span>
+Page&lt;Product&gt; <span class="method">searchProducts</span>(<span class="annotation">@Param</span>(<span class="string">"name"</span>) String name, ... Pageable pageable);</code></pre>
+
+            <h3>File: <code>ProductController.java</code></h3>
+            <p>The <code>listProducts</code> method handles the request, processing both search filters and sorting parameters.</p>
+            <pre><code><span class="keyword">public</span> String <span class="method">listProducts</span>(..., String sortBy, String sortDir, ...) {
+    <span class="comment">// 1. Handle Sorting</span>
+    Sort sort = sortDir.equalsIgnoreCase(<span class="string">"asc"</span>) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+
+    <span class="comment">// 2. Create Pageable object</span>
+    Pageable pageable = PageRequest.of(page, size, sort);
+
+    <span class="comment">// 3. Call search or find all</span>
+    <span class="keyword">if</span> (hasFilters) {
+        productService.searchProducts(name, category, minPrice, maxPrice, pageable);
+    } <span class="keyword">else</span> {
+        productService.searchProducts(<span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, pageable);
+    }
+}</code></pre>
+        </div>
+
+        <div class="section">
+            <h2>2. Validation (Ex 6)</h2>
+            <p>Ensuring data integrity by validating user input before persistence.</p>
+
+            <h3>File: <code>Product.java</code> (Entity)</h3>
+            <p>Validation rules are defined using Jakarta Validation annotations directly on the entity fields.</p>
+            <pre><code><span class="annotation">@NotBlank</span>(message = <span class="string">"Product code is required"</span>)
+<span class="annotation">@Pattern</span>(regexp = <span class="string">"^P\\d{3,}$"</span>) <span class="comment">// Starts with 'P' followed by 3+ digits</span>
+<span class="keyword">private</span> String productCode;
+
+<span class="annotation">@DecimalMin</span>(value = <span class="string">"0.01"</span>)
+<span class="keyword">private</span> BigDecimal price;</code></pre>
+
+            <h3>File: <code>ProductController.java</code></h3>
+            <p>The <code>@Valid</code> annotation triggers the validation, and <code>BindingResult</code> captures any errors.</p>
+            <pre><code><span class="annotation">@PostMapping</span>(<span class="string">"/save"</span>)
+<span class="keyword">public</span> String <span class="method">saveProduct</span>(<span class="annotation">@Valid @ModelAttribute</span> Product product, BindingResult result, ...) {
+    <span class="keyword">if</span> (result.hasErrors()) {
+        <span class="keyword">return</span> <span class="string">"product-form"</span>; <span class="comment">// Return to form to show errors</span>
+    }
+    productService.saveProduct(product);
+}</code></pre>
+        </div>
+
+        <div class="section">
+            <h2>3. Dashboard & Statistics (Ex 8, 9, 10)</h2>
+            <p>Calculating and displaying key business metrics using optimized database queries.</p>
+
+            <h3>File: <code>ProductRepository.java</code></h3>
+            <p>Using JPQL for aggregation is efficient as it avoids loading all data into memory.</p>
+            <pre><code><span class="comment">// Count by category</span>
+<span class="annotation">@Query</span>(<span class="string">"SELECT COUNT(p) FROM Product p WHERE p.category = :category"</span>)
+<span class="keyword">long</span> <span class="method">countByCategory</span>(String category);
+
+<span class="comment">// Sum total value (Price * Quantity)</span>
+<span class="annotation">@Query</span>(<span class="string">"SELECT SUM(p.price * p.quantity) FROM Product p"</span>)
+BigDecimal <span class="method">calculateTotalValue</span>();
+
+<span class="comment">// Find recent products (Spring Data Magic)</span>
+List&lt;Product&gt; <span class="method">findTop5ByOrderByCreatedAtDesc</span>();</code></pre>
+
+            <h3>File: <code>DashboardController.java</code></h3>
+            <p>A dedicated controller aggregates this data for the view.</p>
+            <pre><code><span class="annotation">@GetMapping</span>
+<span class="keyword">public</span> String <span class="method">showDashboard</span>(Model model) {
+    model.addAttribute(<span class="string">"totalValue"</span>, productService.getTotalValue());
+    
+    <span class="comment">// Calculate stats for each category</span>
+    Map&lt;String, Long&gt; stats = <span class="keyword">new</span> HashMap&lt;&gt;();
+    <span class="keyword">for</span> (String cat : productService.getAllCategories()) {
+        stats.put(cat, productService.countProductsByCategory(cat));
+    }
+    model.addAttribute(<span class="string">"categoryCounts"</span>, stats);
+
+    model.addAttribute(<span class="string">"lowStock"</span>, productService.getLowStockProducts(10));
+    <span class="keyword">return</span> <span class="string">"dashboard"</span>;
+}</code></pre>
+        </div>
+    </div>
+</body>
+</html>

@@ -106,8 +106,12 @@
                 <input type="text" 
                        id="productCode" 
                        th:field="*{productCode}" 
+                       th:errorclass="error"
                        placeholder="Enter product code (e.g., P001)"
                        required />
+                <span th:if="${#fields.hasErrors('productCode')}" 
+                      th:errors="*{productCode}" 
+                      class="error-message">Error</span>
             </div>
             
             <div class="form-group">
@@ -115,8 +119,12 @@
                 <input type="text" 
                        id="name" 
                        th:field="*{name}" 
+                       th:errorclass="error"
                        placeholder="Enter product name"
                        required />
+                <span th:if="${#fields.hasErrors('name')}" 
+                      th:errors="*{name}" 
+                      class="error-message">Error</span>
             </div>
             
             <div class="form-group">
@@ -124,10 +132,14 @@
                 <input type="number" 
                        id="price" 
                        th:field="*{price}" 
+                       th:errorclass="error"
                        step="0.01" 
                        min="0"
                        placeholder="0.00"
                        required />
+                <span th:if="${#fields.hasErrors('price')}" 
+                      th:errors="*{price}" 
+                      class="error-message">Error</span>
             </div>
             
             <div class="form-group">
@@ -135,14 +147,18 @@
                 <input type="number" 
                        id="quantity" 
                        th:field="*{quantity}" 
+                       th:errorclass="error"
                        min="0"
                        placeholder="0"
                        required />
+                <span th:if="${#fields.hasErrors('quantity')}" 
+                      th:errors="*{quantity}" 
+                      class="error-message">Error</span>
             </div>
             
             <div class="form-group">
                 <label for="category">Category *</label>
-                <select id="category" th:field="*{category}" required>
+                <select id="category" th:field="*{category}" th:errorclass="error" required>
                     <option value="">Select category</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Furniture">Furniture</option>
@@ -151,6 +167,9 @@
                     <option value="Food">Food</option>
                     <option value="Other">Other</option>
                 </select>
+                <span th:if="${#fields.hasErrors('category')}" 
+                      th:errors="*{category}" 
+                      class="error-message">Error</span>
             </div>
             
             <div class="form-group">

@@ -136,6 +136,49 @@
             display: flex;
             gap: 5px;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .pagination a {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination a.active {
+            background-color: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .advanced-search {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .advanced-search input, .advanced-search select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -154,13 +197,41 @@
         
         <!-- Actions -->
         <div class="actions">
-            <a th:href="@{/products/new}" class="btn btn-primary">➕ Add New Product</a>
+            <div>
+                <a th:href="@{/products/new}" class="btn btn-primary">➕ Add New Product</a>
+                <a th:href="@{/dashboard}" class="btn btn-success" style="margin-left: 10px;">📊 Dashboard</a>
+            </div>
             
-            <form th:action="@{/products/search}" method="get" class="search-form">
+            <form th:action="@{/products}" method="get" class="search-form">
                 <input type="text" name="keyword" th:value="${keyword}" placeholder="Search products..." />
                 <button type="submit" class="btn btn-primary">🔍 Search</button>
             </form>
         </div>
+        
+        <!-- Advanced Search Form -->
+        <form th:action="@{/products}" method="get" class="advanced-search">
+            <strong>Advanced Filter:</strong>
+            <input type="text" name="name" th:value="${name}" placeholder="Product Name" />
+            
+            <select name="category">
+                <option value="">All Categories</option>
+                <option th:each="cat : ${categories}" 
+                        th:value="${cat}" 
+                        th:text="${cat}" 
+                        th:selected="${cat == selectedCategory}">
+                </option>
+            </select>
+            
+            <input type="number" name="minPrice" th:value="${minPrice}" placeholder="Min Price" step="0.01" style="width: 100px;" />
+            <input type="number" name="maxPrice" th:value="${maxPrice}" placeholder="Max Price" step="0.01" style="width: 100px;" />
+            
+            <!-- Preserve Sort if present -->
+            <input type="hidden" name="sortBy" th:if="${sortBy}" th:value="${sortBy}" />
+            <input type="hidden" name="sortDir" th:if="${sortDir}" th:value="${sortDir}" />
+
+            <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
+            <a th:href="@{/products}" class="btn btn-sm" style="background-color: #6c757d; color: white;">Reset</a>
+        </form>
         
         <!-- Products Table -->
         <div th:if="${products != null and !products.isEmpty()}">
@@ -168,11 +239,31 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Code</th>
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Category</th>
+                        <th>
+                            <a th:href="@{/products(sortBy='productCode', sortDir=${sortBy == 'productCode' && sortDir == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" style="color: white; text-decoration: none;">
+                                Code <span th:if="${sortBy == 'productCode'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/products(sortBy='name', sortDir=${sortBy == 'name' && sortDir == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" style="color: white; text-decoration: none;">
+                                Name <span th:if="${sortBy == 'name'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/products(sortBy='price', sortDir=${sortBy == 'price' && sortDir == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" style="color: white; text-decoration: none;">
+                                Price <span th:if="${sortBy == 'price'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/products(sortBy='quantity', sortDir=${sortBy == 'quantity' && sortDir == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" style="color: white; text-decoration: none;">
+                                Quantity <span th:if="${sortBy == 'quantity'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/products(sortBy='category', sortDir=${sortBy == 'category' && sortDir == 'asc' ? 'desc' : 'asc'}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" style="color: white; text-decoration: none;">
+                                Category <span th:if="${sortBy == 'category'}" th:text="${sortDir == 'asc' ? '▲' : '▼'}"></span>
+                            </a>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -199,9 +290,25 @@
             </table>
         </div>
         
+        <!-- Pagination Controls -->
+        <div th:if="${totalPages != null && totalPages > 1}" class="pagination">
+            <a th:if="${currentPage > 0}" 
+               th:href="@{/products(page=${currentPage - 1}, size=10, sortBy=${sortBy}, sortDir=${sortDir}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}">&laquo; Previous</a>
+               
+            <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <a th:href="@{/products(page=${i}, size=10, sortBy=${sortBy}, sortDir=${sortDir}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}" 
+                   th:text="${i + 1}" 
+                   th:class="${currentPage == i ? 'active' : ''}">1</a>
+            </span>
+            
+            <a th:if="${currentPage < totalPages - 1}" 
+               th:href="@{/products(page=${currentPage + 1}, size=10, sortBy=${sortBy}, sortDir=${sortDir}, keyword=${keyword}, name=${name}, category=${selectedCategory}, minPrice=${minPrice}, maxPrice=${maxPrice})}">Next &raquo;</a>
+        </div>
+        
         <!-- Empty State -->
         <div th:if="${products == null or products.isEmpty()}" class="empty-state">
-            <p>No products found. Add your first product!</p>
+            <p>No products found!</p>
+            <a th:href="@{/products}" th:if="${keyword != null or name != null}">Clear Filters</a>
         </div>
     </div>
 </body>
