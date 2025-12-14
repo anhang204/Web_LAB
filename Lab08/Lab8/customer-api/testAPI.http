@@ -1,0 +1,82 @@
+### Test 1: GET All Customers
+GET http://localhost:8080/api/customers
+
+### Test 2: GET Customer by ID
+GET http://localhost:8080/api/customers/1
+
+### Test 3: Create Customer
+POST http://localhost:8080/api/customers
+Content-Type: application/json
+
+{
+    "customerCode": "C006",
+    "fullName": "David Miller",
+    "email": "david.miller@example.com",
+    "phone": "+1555010699",
+    "address": "999 Broadway, Seattle, WA 98101"
+}
+### Test 4: Update Customer
+PUT http://localhost:8080/api/customers/6
+Content-Type: application/json
+
+{
+    "customerCode": "C006",
+    "fullName": "David Miller Jr.",
+    "email": "david.miller.jr@example.com",
+    "phone": "+1555010799",
+    "address": "1000 Broadway, Seattle, WA 98101"
+}
+
+### Test 5: Delete Customer
+DELETE http://localhost:8080/api/customers/6
+
+### Test 6: Search Customers by Name
+GET http://localhost:8080/api/customers/search?keyword=John
+
+### Test 7: Validation error
+POST http://localhost:8080/api/customers
+Content-Type: application/json
+
+{
+    "customerCode": "C",
+    "email": "invalid-email"
+}
+### Test 8: Resource Not Found
+GET http://localhost:8080/api/customers/999
+### Test 9: Duplicate Resource
+POST http://localhost:8080/api/customers
+Content-Type: application/json
+
+{
+    "customerCode": "C007",
+    "fullName": "Test User",
+    "email": "john.doe@example.com"
+}
+### Additional Tests
+GET http://localhost:8080/api/customers/status/ACTIVE
+###
+GET http://localhost:8080/api/customers/status/INACTIVE
+###
+GET http://localhost:8080/api/customers?page=0&size=5
+###
+GET http://localhost:8080/api/customers
+###
+
+GET http://localhost:8080/api/customers?sortBy=fullName&sortDir=asc
+###
+PUT  http://localhost:8080/api/customers?page=0&size=5&sortBy=fullName&sortDir=asc
+###
+
+PUT  http://localhost:8080/api/customers/1
+###
+PUT  http://localhost:8080/api/customers/1
+Content-Type: application/json
+
+{
+"customerCode": "C001",
+"fullName": "John Updated",
+"email": "john.updated@example.com",
+"phone": "+155559999",
+"address": "New Address"
+}
+
